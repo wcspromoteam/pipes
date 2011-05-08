@@ -1,0 +1,37 @@
+PACKAGE
+
+package pipes
+import "github.com/wcspromoteam/pipes"
+
+A few useful functions for dealing with named pipes, and using them as two-way connections.
+
+
+FUNCTIONS
+
+func MakeAndOpen(pipename string) (*os.File, os.Error)
+Creates the pipe if it does not exist, and then opens it using Open().
+
+func Mkfifo(name string, perms uint32)
+TODO: Use syscall.Mkfifo, but it doesn't seem to work atm.
+NOTE: perms are ignored, since this calls the mkfifo program to do it's work.
+WARNING: Hackish implementation.
+
+func Open(pipename string) (*os.File, os.Error)
+Checks a named pipe for sanity, ensuring that the caller can read the pipe, and that it is, in fact, a pipe. Returns the file if it could be successfully opened.
+
+
+TYPES
+
+type PipeReadWriteCloser struct {
+    // contains unexported fields
+}
+
+func NewPipeReadWriteCloser(infile, outfile *os.File) *PipeReadWriteCloser
+
+func (prwc *PipeReadWriteCloser) Close() os.Error
+
+func (prwc *PipeReadWriteCloser) Read(buf []byte) (int, os.Error)
+Implements a semi-blocking interface to the non-blocking underlying pipe (assuming the pipe was opened with CheckPipe())
+BUG: Slower than a normal read, because it Sleep()s in a loop polling for data.
+
+func (prwc *PipeReadWriteCloser) Write(buf []byte) (int, os.Error)
